@@ -131,6 +131,50 @@ const initialState = {
                 isLoading: false,
                 isFulfilled: true,
             }
+            case 'PINJAM_PENDING':
+            return {
+                ...state,
+                isLoading: true,
+                isRejected: false,
+                isFulfilled: false
+            }
+        case 'PINJAM_REJECTED':
+            return {
+                ...state,
+                isLoading: false,
+                isRejected: true,
+            }
+        case 'PINJAM_FULFILLED':
+            console.log(action.payload)
+            // const find = state.bookList.result.find(item => Number(item.id) === Number(action.payload.data.result.id))
+            // state.bookList.result[state.bookList.result.indexOf(find)] = action.payload.data.result
+            return {
+                ...state,
+                isLoading: false,
+                isFulfilled: true,
+            }
+            case 'KEMBALIKAN_PENDING':
+            return {
+                ...state,
+                isLoading: true,
+                isRejected: false,
+                isFulfilled: false
+            }
+        case 'KEMBALIKAN_REJECTED':
+            return {
+                ...state,
+                isLoading: false,
+                isRejected: true,
+            }
+        case 'KEMBALIKAN_FULFILLED':
+            console.log(action.payload)
+            // const find = state.bookList.result.find(item => Number(item.id) === Number(action.payload.data.result.id))
+            // state.bookList.result[state.bookList.result.indexOf(find)] = action.payload.data.result
+            return {
+                ...state,
+                isLoading: false,
+                isFulfilled: true,
+            }
             case 'DELETE_BOOK_PENDING':
                 return {
                     ...state,

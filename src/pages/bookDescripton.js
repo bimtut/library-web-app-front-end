@@ -4,7 +4,9 @@ import Modal from 'react-responsive-modal';
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
-import { getAllBook, getBookSearch, getBookid, bookDelete, bookEdit } from '../publics_redux/redux/actions/book'
+import { getAllBook, getBookSearch, getBookid, bookDelete, bookEdit, pinjam, kembalikan } from '../publics_redux/redux/actions/book'
+import { pureUserPost, register, getUserByEmail } from '../publics_redux/redux/actions/user';
+
 // import { getBook } from '../publics/redux/action/book'
 // import { deleteBook } from '../publics/redux/action/book'
 // import ModalAlert from './ModalAlert'
@@ -72,12 +74,19 @@ class BookDescription extends Component {
     constructor(props) {
         super(props)
         this.state = {
+  
+            username:'', 
+            email:'',
+            password:'',
+            checkPassword:'', 
             book: [],
         //   input: [],
             name: '',
             writer: '',
             description: '',
-            openEdit: false
+            openEdit: false,
+            regisShow: false,
+            loginShow: false,
         //   modal
         }
     }
@@ -93,6 +102,89 @@ class BookDescription extends Component {
         console.log('local storage', localStorage)
       }
 
+    showRegis = () => {
+        this.setState({regisShow: true})
+    }
+    hideRegis = () => {
+        this.setState({
+            regisShow: false,
+            loginShow: false
+        })
+    }
+    // login button
+    showLogin = () => {
+        this.setState({loginShow: true})
+    }
+    hideLogin = () => {
+        this.setState({
+            loginShow: false,
+            regisShow: false
+        })
+    }
+      registration = async (e) => {
+        console.log('hahaha')
+        e.preventDefault()
+        if (this.state.loading) {
+            this.state.loading = false
+            const data = {
+                username: this.state.username,
+                email: this.state.email,
+                password: this.state.password,
+                checkPassword: this.state.checkPassword
+            }
+            if (data.password === data.checkPassword) {
+                console.log('jalan')
+                await this.props.dispatch(register({
+                    username: this.state.username,
+                    email: this.state.email,
+                    password: this.state.password
+                }))
+                if (this.props.user.userList.code === "ER_DUP_ENTRY") {
+                    // email sudah terdaftar belum terhandle
+                    // const modal = <alertModal show={true} pesan={"Maaaf Email Sudah Terdaftar"} error={true} link={"/register"} setModal={this.setModal} enabled={() => this.state.loading = true} />
+                    // this.setState({ modal: modal })
+                } else {
+                    alert('sukses')
+                    
+                }    
+            } else {
+                alert('pass beda')
+                
+            }
+        }
+        console.log(this.state)
+        this.setState({loading: true})
+    }
+    // zidni vers
+    login = async (e) => {
+        e.preventDefault()
+        const data = {
+            email: this.state.email,
+            password: this.state.password,
+        }
+        if (this.state.loading) {
+            this.state.loading = false   
+            await this.props.dispatch(getUserByEmail({
+                email: this.state.email,
+                password: this.state.password,
+            }))
+            console.log(this.props.user.userList)
+            if (this.props.user.userList === 'Password Salah') {
+                alert('password salah')
+                // const modal = <ModalAlert show={true} pesan={"Password Salah"} error={true} link={"/login"} setModal={this.setModal} enabled={() => this.state.loading = true} />
+                // this.setState({ modal: modal })
+            } else if (this.props.user.userList === "Email Tidak Terdaftar") {
+                alert('email tidak terdaftar')
+                // const modal = <ModalAlert show={true} pesan={"Email Tidak Terdaftar"} error={true} link={"/login"} setModal={this.setModal} enabled={() => this.state.loading = true} />
+                // this.setState({ modal: modal })
+            } else {
+                alert("sukses")
+            }
+        }
+        this.setState({
+            loading: true
+        })
+    }
       hideEdit = () => {
           this.setState({
               openEdit: false
@@ -127,22 +219,23 @@ class BookDescription extends Component {
       }
       pinjam = () => {
         const input = {
+            // name: this.state.book['name'],
+            // writer: this.state.book['writer'],
+            // description: this.state.book['description'],
             status: 0
         }
         console.log('ini nih ',input)
         const id = this.props.match.params.bookid
-        this.props.dispatch(bookEdit(input, id))
+        this.props.dispatch(pinjam(input, id))
         this.setState({ openEdit: false})
       }
       kembalikan = () => {
         const input = {
             status: 1
-            
-            
-          }
+            }
           console.log('ini nih ',input)
           const id = this.props.match.params.bookid
-          this.props.dispatch(bookEdit(input, id))
+          this.props.dispatch(kembalikan(input, id))
           this.setState({ openEdit: false})
       }
      
@@ -163,7 +256,7 @@ class BookDescription extends Component {
                         {localStorage.role == "admin" ? '' :
                         <li className="button" style={li}>
                             {localStorage.token == null ? <div>
-                                <button style={{backgroundColor: "green", color:"white"}} onClick={this.pinjam}>Pinjam</button>
+                                <button style={{backgroundColor: "green", color:"white"}} onClick={this.showLogin}>Pinjam</button>
                             </div>: <div>
                             {this.state.book['status'] == 1 ? <button style={{backgroundColor: "green", color:"white"}} onClick={this.pinjam}>Pinjam</button> : <button style={{backgroundColor: "red", color:"white"}} onClick={this.kembalikan}>Kembalikan</button>}
                             </div>}
@@ -226,6 +319,67 @@ class BookDescription extends Component {
                     <div>
                         <button onClick={this.editBook}>EDIT</button>
                     </div>
+                </Modal>
+                <Modal classNames="regis" open={this.state.regisShow} onClose={this.hideRegis} >
+                    <h2>Registrasi</h2>
+                    <div>
+                        <div>
+                            <p>username:</p>
+                        </div>
+                        <div>
+                            <input type="text" placeholder="what is your name?" id="username" onChange={(e)=>this.setState({username:e.target.value})}  style={{ padding: "10px 20px", fontSize: "10pt", borderRadius: 5, border: "1px solid #ddd", width: "100%", boxSizing: "border-box" }}/>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <p>email:</p>
+                        </div>
+                        <div>
+                            <input type="email" placeholder="what is your email?" id="email" onChange={(e)=>this.setState({email:e.target.value})}  style={{ padding: "10px 20px", fontSize: "10pt", borderRadius: 5, border: "1px solid #ddd", width: "100%", boxSizing: "border-box" }}/>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <p>password:</p>
+                        </div>
+                        <div>
+                            <input type="password" placeholder="input password?" id="password" onChange={(e)=>this.setState({password:e.target.value})}  style={{ padding: "10px 20px", fontSize: "10pt", borderRadius: 5, border: "1px solid #ddd", width: "100%", boxSizing: "border-box" }}/>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <p>konfirmasi password:</p>
+                        </div>
+                        <div>
+                            <input type="password" placeholder="what is your name?" id="confirm_password" onChange={(e)=>this.setState({checkPassword:e.target.value})}  style={{ padding: "10px 20px", fontSize: "10pt", borderRadius: 5, border: "1px solid #ddd", width: "100%", boxSizing: "border-box" }}/>
+                        </div>
+                    </div>
+                    <div>
+                        <button onClick={this.registration}>DAFTAR</button>
+                    </div>
+                </Modal>
+                <Modal classNames="login" onClose={this.hideLogin} open={this.state.loginShow}>
+                    <h2>Login</h2>
+                    <div>
+                        <div>
+                            <p>email:</p>
+                        </div>
+                        <div>
+                            <input autocomplete="off" type={'email'} style={{ padding: "10px 20px", fontSize: "10pt", borderRadius: 5, border: "1px solid #ddd", width: "100%", boxSizing: "border-box" }} id={'email'} required onChange={(e)=>this.setState({email:e.target.value})}/>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <p>password:</p>
+                        </div>
+                        <div>
+                            <input type={'password'} style={{ padding: "10px 20px", fontSize: "10pt", borderRadius: 5, border: "1px solid #ddd", width: "100%", boxSizing: "border-box" }} id={'password'} required onChange={(e)=>this.setState({password:e.target.value})}/>
+                        </div>
+                    </div>
+                    <div>
+                        <button onClick={this.login} id={'login'} style={{ padding: 10, width: "100%", borderRadius: '5px', border: "4px", backgroundColor: "#24f555", color: "white", fontSize: "10pt", cursor: "pointer", marginTop: "10px" }}>LOG IN</button>
+                    </div>
+                    <p>Belum punya akun? <a onClick={this.showRegis} style={{ textDecoration: "none", color: "blue" }}>Daftar di sini</a></p>
                 </Modal>
             </div>
         )

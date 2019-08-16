@@ -75,6 +75,7 @@ setSearch = (kucing) => {
 
             </Route>
             <Route path={"/:bookid"} component={BookDescription}>
+              {/* mau nongolin props gimana ya */}
                 {/* <BookDescription /> */}
             </Route>
           </Switch>

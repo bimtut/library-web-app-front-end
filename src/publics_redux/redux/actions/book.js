@@ -58,6 +58,28 @@ export const bookEdit = (data, id) => {
     }
 }
 
+export const pinjam = (data, id) => {
+    return {
+        type: "PINJAM",
+        payload: axios.patch(`http://${ip}/book/${id}/pinjam`,{...data},{
+            headers: {
+                "authorization":"Allow"
+            }
+        })
+    }
+}
+
+export const kembalikan = (data, id) => {
+    return {
+        type: "KEMBALIKAN",
+        payload: axios.patch(`http://${ip}/book/${id}/kembalikan`,{...data},{
+            headers: {
+                "authorization":"Allow"
+            }
+        })
+    }
+}
+
 export const bookDelete = (id) => {
     return {
         type: "DELETE_BOOK",
